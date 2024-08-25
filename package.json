@@ -6,6 +6,7 @@
   },
   "scripts": {
     "build": "echo \"The build step is not required when using JavaScript!\" && exit 0",
+    "dev": "cdk synth --no-staging > template.yaml\n sam local start-api -t template.yaml",
     "cdk": "cdk",
     "test": "jest"
   },
