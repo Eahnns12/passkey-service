@@ -1,5 +1,5 @@
 {
-  "app": "node bin/passkey-service.js",
+  "app": "node bin/index.cjs",
   "watch": {
     "include": [
       "**"
@@ -7,7 +7,7 @@
     "exclude": [
       "README.md",
       "cdk*.json",
-      "jest.config.js",
+      "jest.config.cjs",
       "package*.json",
       "yarn.lock",
       "node_modules",

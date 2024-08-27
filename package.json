@@ -2,12 +2,13 @@
   "name": "passkey-service",
   "version": "0.1.0",
   "bin": {
-    "passkey-service": "bin/passkey-service.js"
+    "passkey-service": "bin/index.cjs"
   },
   "scripts": {
     "build": "echo \"The build step is not required when using JavaScript!\" && exit 0",
     "dev": "cdk synth --no-staging > template.yaml\n sam local start-api -t template.yaml",
-    "cdk": "cdk",
+    "deploy": "cdk deploy",
+    "watch": "cdk watch",
     "test": "jest"
   },
   "devDependencies": {
@@ -16,7 +17,6 @@
   },
   "dependencies": {
     "aws-cdk-lib": "2.154.1",
-    "aws-sdk": "^2.1682.0",
     "constructs": "^10.0.0"
   }
 }
