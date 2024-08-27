@@ -1,5 +1,5 @@
 const cdk = require("aws-cdk-lib");
-const { PasskeyServiceStack } = require("../lib/index.cjs");
+const { PasskeyServiceStack } = require("../lib/stack.cjs");
 
 const app = new cdk.App();
 new PasskeyServiceStack(app, "PasskeyServiceStack", {

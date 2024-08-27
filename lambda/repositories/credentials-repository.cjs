@@ -1,11 +1,11 @@
-const { DynamoDB } = require("aws-sdk");
+const config = require("../config.cjs");
 
 class CredentialsRepository {
-  constructor() {
-    this.db = new DynamoDB.DocumentClient();
+  constructor(db) {
+    this.db = db;
   }
 
-  #tableName = process.env.CREDENTIALS_TABLE_NAME;
+  #tableName = config.dynamodb.tables.credentials.tableName;
 
   async createCredential(credential) {
     return await this.db
@@ -16,17 +16,19 @@ class CredentialsRepository {
       .promise();
   }
 
-  async queryCredentialbyUserID(userID) {
-    return await this.db
+  async queryCredentialbyUserId(userId) {
+    const { Items } = await this.db
       .query({
         TableName: this.#tableName,
         IndexName: "userIdIndex",
-        KeyConditionExpression: "userID = :uid",
+        KeyConditionExpression: "userId = :uid",
         ExpressionAttributeValues: {
-          ":uid": userID,
+          ":uid": userId,
         },
       })
       .promise();
+
+    return Items;
   }
 }
 

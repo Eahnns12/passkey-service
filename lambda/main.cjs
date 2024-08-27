@@ -4,7 +4,7 @@ const {
 } = require("./handlers/index.cjs");
 const { successResponse, errorResponse } = require("./utils/http-response.cjs");
 
-async function handler(event, context) {
+async function handler(event) {
   const path = String(event.path).toLowerCase();
   const method = String(event.httpMethod).toUpperCase();
   const route = `${method} ${path}`;
@@ -18,14 +18,7 @@ async function handler(event, context) {
   if (routes.has(route)) {
     return routes.get(route)(event);
   } else {
-    return errorResponse({
-      statusCode: 500,
-      body: {
-        title: "Internal Server Error",
-        detail: null,
-        instance: event.resource,
-      },
-    });
+    return errorResponse();
   }
 }
 

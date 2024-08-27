@@ -10,23 +10,24 @@ function createResponse({ statusCode, headers = {}, body = {} } = {}) {
   };
 }
 
-function successResponse({ statusCode, body = {} } = {}) {
+function successResponse(result = {}) {
   return createResponse({
-    statusCode,
-    headers: { "Content-Type": "application/json" },
-    body,
+    statusCode: result.statusCode || 200,
+    headers: { "Content-Type": "application/json", ...result.headers },
+    body: result.body !== undefined ? result.body : result,
   });
 }
 
-function errorResponse({ statusCode = 400, body = {} } = {}) {
+function errorResponse(error = {}) {
   return createResponse({
-    statusCode,
+    statusCode: error.statusCode || 500,
     headers: { "Content-Type": "application/problem+json" },
     body: {
-      title: body?.name || "Unknown Error",
-      status: statusCode,
-      detail: body?.message,
-      instance: body?.instance || "/",
+      title: error.title || error.name || "Unknown Error",
+      status: error.statusCode || 500,
+      type: error.type || "about:blank",
+      detail: error.detail || error.message,
+      instance: error.instance || null,
     },
   });
 }
