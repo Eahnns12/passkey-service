@@ -11,12 +11,23 @@ class CredentialsRepository {
     return await this.db
       .put({
         TableName: this.#tableName,
-        Item: { ...credential },
+        Item: { ...credential, createdAt: new Date().toISOString() },
       })
       .promise();
   }
 
-  async queryCredentialbyUserId(userId) {
+  async getCredentialbyId(credentialId) {
+    const { Item } = await this.db
+      .get({
+        TableName: this.#tableName,
+        Key: { credentialId },
+      })
+      .promise();
+
+    return Item;
+  }
+
+  async queryCredentialsbyUserId(userId) {
     const { Items } = await this.db
       .query({
         TableName: this.#tableName,
@@ -29,6 +40,15 @@ class CredentialsRepository {
       .promise();
 
     return Items;
+  }
+
+  async updateCredentialCounterbyId(credentialId, newCounter) {
+    return await this.db.update({
+      TableName: this.#tableName,
+      Key: { credentialId },
+      UpdateExpression: "set counter = :c",
+      ExpressionAttributeValues: { ":c": newCounter },
+    });
   }
 }
 

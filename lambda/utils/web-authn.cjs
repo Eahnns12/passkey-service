@@ -1,11 +1,14 @@
 const {
   generateRegistrationOptions,
   verifyRegistrationResponse,
+  generateAuthenticationOptions,
+  verifyAuthenticationResponse,
 } = require("@simplewebauthn/server");
 const { isoUint8Array } = require("@simplewebauthn/server/helpers");
-const { default: JSONError } = require("./json-error.cjs");
+const JSONError = require("./json-error.cjs");
 
 const registration = {};
+const authentication = {};
 
 registration.generate = async function ({
   rpId,
@@ -22,7 +25,7 @@ registration.generate = async function ({
       userID: isoUint8Array.fromUTF8String(userId || crypto.randomUUID()),
       userName: userName,
       userDisplayName: userDisplayName,
-      timeout: 30000,
+      timeout: 60000,
       excludeCredentials,
       attestationType: "none",
       authenticatorSelection: {
@@ -67,4 +70,56 @@ registration.verify = async function ({
   }
 };
 
-module.exports = { registration };
+authentication.generate = async function ({ rpId }) {
+  try {
+    const options = await generateAuthenticationOptions({
+      rpID: rpId,
+      timeout: 600000,
+    });
+
+    return options;
+  } catch (error) {
+    throw new JSONError(error.message, {
+      statusCode: 400,
+      title: "WebAuthn Error",
+    });
+  }
+};
+
+authentication.verify = async function ({
+  publicKeyCredential,
+  challenge,
+  origin,
+  rpId,
+  credentialId,
+  publicKey,
+  counter,
+  transports,
+}) {
+  try {
+    const { verified, authenticationInfo } = await verifyAuthenticationResponse(
+      {
+        response: publicKeyCredential,
+        expectedChallenge: challenge,
+        expectedOrigin: origin,
+        expectedRPID: rpId,
+        requireUserVerification: false,
+        authenticator: {
+          credentialID: credentialId,
+          credentialPublicKey: publicKey,
+          counter: counter,
+          transports: transports,
+        },
+      }
+    );
+
+    return { verified, authenticationInfo };
+  } catch (error) {
+    throw new JSONError(error.message, {
+      statusCode: 400,
+      title: "WebAuthn Error",
+    });
+  }
+};
+
+module.exports = { registration, authentication };

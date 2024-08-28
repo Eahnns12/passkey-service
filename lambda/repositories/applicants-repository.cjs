@@ -9,6 +9,7 @@ class ApplicantsRepository {
 
   async createApplicant({
     applicantId,
+    type,
     challenge,
     userId,
     userName,
@@ -19,11 +20,13 @@ class ApplicantsRepository {
         TableName: this.#tableName,
         Item: {
           applicantId,
+          type,
           challenge,
           userId,
           userName,
           userDisplayName,
-          ttl: Math.floor(Date.now() / 1000) + 30,
+          createdAt: new Date().toISOString(),
+          ttl: Math.floor(Date.now() / 1000) + 60,
         },
       })
       .promise();

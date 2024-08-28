@@ -1,16 +1,15 @@
 const { DynamoDB } = require("aws-sdk");
-const RegistrationService = require("../../../services/registration-service.cjs");
+const { RegistrationService } = require("../../../../services/index.cjs");
 const {
   ApplicantsRepository,
   CredentialsRepository,
-} = require("../../../repositories/index.cjs");
-const JSONError = require("../../../utils/json-error.cjs");
+} = require("../../../../repositories/index.cjs");
 const {
   successResponse,
   errorResponse,
-} = require("../../../utils/http-response.cjs");
+} = require("../../../../utils/http-response.cjs");
 
-async function registrationRequestHandler(event) {
+async function registrationResponseHandler(event) {
   try {
     const origin = event.headers.origin;
 
@@ -18,12 +17,12 @@ async function registrationRequestHandler(event) {
       throw new JSONError("request agent not supported", {
         statusCode: 400,
         title: "Error",
-        instance: "/registration/request",
+        instance: "/webauthn/registration/request",
       });
     }
 
     const hostname = new URL(origin).hostname;
-    const { rpName, userId, userName } = JSON.parse(event.body);
+    const { session, publicKeyCredential } = JSON.parse(event.body);
 
     const dynamoDB = new DynamoDB.DocumentClient();
     const applicantsRepository = new ApplicantsRepository(dynamoDB);
@@ -33,11 +32,11 @@ async function registrationRequestHandler(event) {
       credentialsRepository
     );
 
-    const result = await registrationService.request({
+    const result = await registrationService.response({
+      session,
+      origin,
       rpId: hostname,
-      rpName,
-      userId,
-      userName,
+      publicKeyCredential,
     });
 
     return successResponse(result);
@@ -46,4 +45,4 @@ async function registrationRequestHandler(event) {
   }
 }
 
-module.exports = { registrationRequestHandler };
+module.exports = registrationResponseHandler;

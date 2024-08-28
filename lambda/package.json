@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "main": "main.cjs",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "node --test"
   },
   "keywords": [],
   "author": "",
@@ -13,5 +13,8 @@
     "@simplewebauthn/server": "^10.0.1",
     "aws-sdk": "^2.1682.0",
     "zod": "^3.23.8"
+  },
+  "devDependencies": {
+    "vitest": "^2.0.5"
   }
 }
