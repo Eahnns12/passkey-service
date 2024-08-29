@@ -11,7 +11,11 @@ class CredentialsRepository {
     return await this.db
       .put({
         TableName: this.#tableName,
-        Item: { ...credential, createdAt: new Date().toISOString() },
+        Item: {
+          ...credential,
+          createdAt: new Date().toISOString(),
+          lastUsedAt: new Date().toISOString(),
+        },
       })
       .promise();
   }
@@ -46,8 +50,11 @@ class CredentialsRepository {
     return await this.db.update({
       TableName: this.#tableName,
       Key: { credentialId },
-      UpdateExpression: "set counter = :c",
-      ExpressionAttributeValues: { ":c": newCounter },
+      UpdateExpression: "set counter = :c, lastUsedAt = :l",
+      ExpressionAttributeValues: {
+        ":c": newCounter,
+        ":l": new Date().toISOString(),
+      },
     });
   }
 }

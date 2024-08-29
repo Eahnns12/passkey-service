@@ -77,14 +77,16 @@ class AuthenticationService extends WebAuthnService {
 
     await this.#applicantsRepository.deleteApplicantById(validatedData.session);
 
-    if (verified) {
-      await this.#credentialsRepository.updateCredentialCounterbyId(
-        credential.credentialId,
-        authenticationInfo.newCounter
-      );
+    if (!verified) {
+      return { verified };
     }
 
-    return { verified };
+    await this.#credentialsRepository.updateCredentialCounterbyId(
+      credential.credentialId,
+      authenticationInfo.newCounter
+    );
+
+    return { verified, userId: credential.userId };
   }
 }
 module.exports = AuthenticationService;

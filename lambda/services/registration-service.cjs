@@ -79,24 +79,29 @@ class RegistrationService extends WebAuthnService {
 
     await this.#applicantsRepository.deleteApplicantById(validatedData.session);
 
-    if (verified) {
-      await this.#credentialsRepository.createCredential({
-        credentialId: registrationInfo.credentialID,
-        publicKey: registrationInfo.credentialPublicKey,
-        counter: registrationInfo.counter,
-        deviceType: registrationInfo.credentialDeviceType,
-        backedUp: registrationInfo.credentialBackedUp,
-        transports: publicKeyCredential.response.transports,
-        aaguid: registrationInfo.aaguid,
-        origin: registrationInfo.origin,
-        rpId: registrationInfo.rpID,
-        userId: Buffer.from(applicant.userId, "base64").toString("utf8"),
-        userName: applicant.userName,
-        userDisplayName: applicant.userDisplayName,
-      });
+    if (!verified) {
+      return { verified };
     }
 
-    return { verified };
+    const userId = Buffer.from(applicant.userId, "base64").toString("utf8");
+
+    await this.#credentialsRepository.createCredential({
+      credentialId: registrationInfo.credentialID,
+      credentialType: registrationInfo.credentialType,
+      publicKey: registrationInfo.credentialPublicKey,
+      counter: registrationInfo.counter,
+      deviceType: registrationInfo.credentialDeviceType,
+      backedUp: registrationInfo.credentialBackedUp,
+      transports: publicKeyCredential.response.transports,
+      aaguid: registrationInfo.aaguid,
+      origin: registrationInfo.origin,
+      rpId: registrationInfo.rpID,
+      userId: userId,
+      userName: applicant.userName,
+      userDisplayName: applicant.userDisplayName,
+    });
+
+    return { verified, userId };
   }
 
   async #getExcludeCredentials(userId) {
