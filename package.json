@@ -1,8 +1,8 @@
 {
-  "name": "passkey-service",
+  "name": "web-authn-service",
   "version": "0.1.0",
   "bin": {
-    "passkey-service": "bin/index.cjs"
+    "web-authn-service": "bin/index.cjs"
   },
   "scripts": {
     "deploy:dev": "cdk deploy -c stage=dev",
