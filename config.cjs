@@ -17,7 +17,7 @@ const config = {
   apiGateway: {
     name: "WebAuthnApiGateway",
     description: "WebAuthn Service API",
-    cors: { allowHeaders: ["x-api-key"] },
+    cors: { allowHeaders: ["X-Api-Key"] },
   },
   apiKey: {
     name: "WebAuthnApiKey",
@@ -28,7 +28,7 @@ const config = {
     description: "Standard usage plan for WebAuthn Service",
     throttle: {
       rateLimit: 10,
-      burstLimit: 2,
+      burstLimit: 30,
     },
     quota: { limit: 1000 },
   },

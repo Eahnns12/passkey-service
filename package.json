@@ -5,11 +5,10 @@
     "passkey-service": "bin/index.cjs"
   },
   "scripts": {
-    "build": "echo \"The build step is not required when using JavaScript!\" && exit 0",
-    "dev": "cdk synth --no-staging > template.yaml\n sam local start-api -t template.yaml",
-    "deploy": "cdk deploy",
-    "watch": "cdk watch",
-    "test": "node --test"
+    "deploy:dev": "cdk deploy -c stage=dev",
+    "deploy:prod": "cdk deploy -c stage=prod",
+    "destroy:dev": "cdk destroy -c stage=dev",
+    "destroy:prod": "cdk destroy -c stage=prod"
   },
   "devDependencies": {
     "aws-cdk": "2.154.1"
