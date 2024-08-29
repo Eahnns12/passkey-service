@@ -1,8 +1,12 @@
 const cdk = require("aws-cdk-lib");
-const { PasskeyServiceStack } = require("../lib/stack.cjs");
+const { WebAuthnServiceStack } = require("../lib/stack.cjs");
 
 const app = new cdk.App();
-new PasskeyServiceStack(app, "PasskeyServiceStack", {
+new WebAuthnServiceStack(app, "WebAuthnServiceStack", {
+  env: {
+    stage: "Dev", // "Prod" || "Dev"
+  },
+
   /* If you don't specify 'env', this stack will be environment-agnostic.
    * Account/Region-dependent features and context lookups will not work,
    * but a single synthesized template can be deployed anywhere. */
