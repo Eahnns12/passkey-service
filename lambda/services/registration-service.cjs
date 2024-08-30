@@ -25,7 +25,7 @@ class RegistrationService extends WebAuthnService {
       validatedData.userId
     );
 
-    const session = this.generateSeesion();
+    const session = this.generateSession();
 
     const publicKeyCredentialCreationOptions =
       await this.action.registration.generate({

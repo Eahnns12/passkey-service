@@ -49,7 +49,7 @@ class WebAuthnService {
     }
   }
 
-  generateSeesion(length = 10) {
+  generateSession(length = 10) {
     return crypto.randomBytes(length).toString("base64");
   }
 }

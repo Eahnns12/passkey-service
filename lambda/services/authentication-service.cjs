@@ -15,7 +15,7 @@ class AuthenticationService extends WebAuthnService {
   async request({ rpId }) {
     const validatedData = this.validate("authentication", "request", { rpId });
 
-    const session = this.generateSeesion();
+    const session = this.generateSession();
 
     const publicKeyCredentialRequestOptions =
       await this.action.authentication.generate({
