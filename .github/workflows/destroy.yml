@@ -26,7 +26,9 @@ jobs:
       - name: Install dependencies
         run: |
           npm ci
-          npm install -g aws-cdk
+          cd lambda
+          npm ci
+          cd ..
 
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v4
@@ -36,4 +38,4 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
 
       - name: Destroy
-        run: npm run destroy:${{ github.event.inputs.stage }}
+        run: npm run destroy:${{ github.event.inputs.stage }} -- --force

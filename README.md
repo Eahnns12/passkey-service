@@ -1,5 +1,7 @@
 # WebAuthn API
 
+WebAuthn server-side implementation
+
 ## Registration Begin
 
 Initializes the WebAuthn registration process, generating necessary challenges and parameters.

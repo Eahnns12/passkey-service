@@ -1,55 +1,50 @@
-const config = require("../config.cjs");
+const { DynamoDBClient } = require("@aws-sdk/client-dynamodb");
+const { DynamoDBDocument } = require("@aws-sdk/lib-dynamodb");
 
 class ApplicantsRepository {
-  constructor(db) {
-    this.db = db;
+  constructor() {
+    this.client = DynamoDBDocument.from(new DynamoDBClient());
   }
 
-  #tableName = config.dynamodb.tables.applicants.tableName;
+  #tableName = process.env.APPLICANTS_TABLE_NAME;
 
-  async createApplicant({
-    applicantId,
-    type,
-    challenge,
-    userId,
-    userName,
-    userDisplayName,
-  }) {
-    return await this.db
-      .put({
+  async createApplicant(applicant) {
+    try {
+      return await this.client.put({
         TableName: this.#tableName,
         Item: {
-          applicantId,
-          type,
-          challenge,
-          userId,
-          userName,
-          userDisplayName,
+          ...applicant,
           createdAt: new Date().toISOString(),
           ttl: Math.floor(Date.now() / 1000) + 60,
         },
-      })
-      .promise();
+      });
+    } catch (error) {
+      throw new Error("failed to create applicant");
+    }
   }
 
   async getApplicantById(applicantId) {
-    const { Item } = await this.db
-      .get({
+    try {
+      const { Item } = await this.client.get({
         TableName: this.#tableName,
         Key: { applicantId },
-      })
-      .promise();
+      });
 
-    return Item;
+      return Item;
+    } catch (error) {
+      throw new Error("failed to get applicant");
+    }
   }
 
   async deleteApplicantById(applicantId) {
-    return await this.db
-      .delete({
+    try {
+      return await this.client.delete({
         TableName: this.#tableName,
         Key: { applicantId },
-      })
-      .promise();
+      });
+    } catch (error) {
+      throw new Error("failed to delete applicant");
+    }
   }
 }
 

@@ -1,61 +1,73 @@
-const config = require("../config.cjs");
+const { DynamoDBClient } = require("@aws-sdk/client-dynamodb");
+const { DynamoDBDocument } = require("@aws-sdk/lib-dynamodb");
 
 class CredentialsRepository {
-  constructor(db) {
-    this.db = db;
+  constructor() {
+    this.client = DynamoDBDocument.from(new DynamoDBClient());
   }
 
-  #tableName = config.dynamodb.tables.credentials.tableName;
+  #tableName = process.env.CREDENTIALS_TABLE_NAME;
 
   async createCredential(credential) {
-    return await this.db
-      .put({
+    try {
+      return await this.client.put({
         TableName: this.#tableName,
         Item: {
           ...credential,
           createdAt: new Date().toISOString(),
           lastUsedAt: new Date().toISOString(),
         },
-      })
-      .promise();
+      });
+    } catch (error) {
+      throw new Error("failed to create credential");
+    }
   }
 
   async getCredentialbyId(credentialId) {
-    const { Item } = await this.db
-      .get({
+    try {
+      const { Item } = await this.client.get({
         TableName: this.#tableName,
         Key: { credentialId },
-      })
-      .promise();
+      });
 
-    return Item;
+      return Item;
+    } catch (error) {
+      throw new Error("failed to get credential");
+    }
   }
 
   async queryCredentialsbyUserId(userId) {
-    const { Items } = await this.db
-      .query({
+    try {
+      const { Items } = await this.client.query({
         TableName: this.#tableName,
         IndexName: "userIdIndex",
         KeyConditionExpression: "userId = :uid",
         ExpressionAttributeValues: {
           ":uid": userId,
         },
-      })
-      .promise();
+      });
 
-    return Items;
+      return Items;
+    } catch (error) {
+      throw new Error("failed to query credentials");
+    }
   }
 
   async updateCredentialCounterbyId(credentialId, newCounter) {
-    return await this.db.update({
-      TableName: this.#tableName,
-      Key: { credentialId },
-      UpdateExpression: "set counter = :c, lastUsedAt = :l",
-      ExpressionAttributeValues: {
-        ":c": newCounter,
-        ":l": new Date().toISOString(),
-      },
-    });
+    try {
+      return await this.client.update({
+        TableName: this.#tableName,
+        Key: { credentialId },
+        UpdateExpression: "set #c = :c, lastUsedAt = :l",
+        ExpressionAttributeNames: { "#c": "counter" },
+        ExpressionAttributeValues: {
+          ":c": newCounter,
+          ":l": new Date().toISOString(),
+        },
+      });
+    } catch (error) {
+      throw new Error("failed to update credential counter");
+    }
   }
 }
 

@@ -1,4 +1,3 @@
-const { DynamoDB } = require("aws-sdk");
 const { AuthenticationService } = require("../../../../services/index.cjs");
 const {
   ApplicantsRepository,
@@ -24,9 +23,8 @@ async function authenticationRequestHandler(event) {
 
     const hostname = new URL(origin).hostname;
 
-    const dynamoDB = new DynamoDB.DocumentClient();
-    const applicantsRepository = new ApplicantsRepository(dynamoDB);
-    const credentialsRepository = new CredentialsRepository(dynamoDB);
+    const applicantsRepository = new ApplicantsRepository();
+    const credentialsRepository = new CredentialsRepository();
     const authenticationService = new AuthenticationService(
       applicantsRepository,
       credentialsRepository
