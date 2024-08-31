@@ -1,42 +1,27 @@
-const { AuthenticationService } = require("../../../../services/index.cjs");
-const {
-  ApplicantsRepository,
-  CredentialsRepository,
-} = require("../../../../repositories/index.cjs");
-const JSONError = require("../../../../utils/json-error.cjs");
+const { getInstance, AuthenticationService } = require("../../../../core.cjs");
 const {
   successResponse,
   errorResponse,
 } = require("../../../../utils/http-response.cjs");
+const getOriginAndHostname = require("../../../../utils/get-origin-and-hostname.cjs");
+const getBody = require("../../../../utils/get-body.cjs");
+const validate = require("../../../../utils/validate.cjs");
 
 async function authenticationResponseHandler(event) {
   try {
-    const origin = event.headers.origin;
+    const { origin, hostname: rpId } = getOriginAndHostname(event);
+    const { session, publicKeyCredential } = getBody(event);
 
-    if (!origin) {
-      throw new JSONError("request agent not supported", {
-        statusCode: 400,
-        title: "Error",
-        instance: "/webauthn/registration/request",
-      });
-    }
+    const params = { origin, rpId, session, publicKeyCredential };
 
-    const hostname = new URL(origin).hostname;
-    const { session, publicKeyCredential } = JSON.parse(event.body);
+    const authenticationService = getInstance(AuthenticationService);
 
-    const applicantsRepository = new ApplicantsRepository();
-    const credentialsRepository = new CredentialsRepository();
-    const authenticationService = new AuthenticationService(
-      applicantsRepository,
-      credentialsRepository
+    const validatedRequest = validate(
+      authenticationService.response.bind(authenticationService),
+      authenticationService.schemas.authentication.response
     );
 
-    const result = await authenticationService.response({
-      session,
-      rpId: hostname,
-      origin,
-      publicKeyCredential,
-    });
+    const result = await validatedRequest(params);
 
     return successResponse(result);
   } catch (error) {

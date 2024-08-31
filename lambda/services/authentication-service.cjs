@@ -2,6 +2,9 @@ const WebAuthnService = require("./webauthn-service.cjs");
 const JSONError = require("../utils/json-error.cjs");
 
 class AuthenticationService extends WebAuthnService {
+  #applicantsRepository;
+  #credentialsRepository;
+
   constructor(applicantsRepository, credentialsRepository) {
     super();
 
@@ -9,18 +12,11 @@ class AuthenticationService extends WebAuthnService {
     this.#credentialsRepository = credentialsRepository;
   }
 
-  #applicantsRepository = null;
-  #credentialsRepository = null;
-
   async request({ rpId }) {
-    const validatedData = this.validate("authentication", "request", { rpId });
-
     const session = this.generateSession();
 
     const publicKeyCredentialRequestOptions =
-      await this.action.authentication.generate({
-        rpId: validatedData.rpId,
-      });
+      await this.action.authentication.generate({ rpId });
 
     await this.#applicantsRepository.createApplicant({
       applicantId: session,
@@ -31,16 +27,9 @@ class AuthenticationService extends WebAuthnService {
     return { session, publicKeyCredentialRequestOptions };
   }
 
-  async response({ session, rpId, origin, publicKeyCredential }) {
-    const validatedData = this.validate("authentication", "response", {
-      session,
-      rpId,
-      origin,
-      publicKeyCredential,
-    });
-
+  async response({ origin, rpId, session, publicKeyCredential }) {
     const applicant = await this.#applicantsRepository.getApplicantById(
-      validatedData.session
+      session
     );
 
     if (!applicant) {
@@ -52,7 +41,7 @@ class AuthenticationService extends WebAuthnService {
     }
 
     const credential = await this.#credentialsRepository.getCredentialbyId(
-      validatedData.publicKeyCredential.id
+      publicKeyCredential.id
     );
 
     if (!credential) {
@@ -65,17 +54,17 @@ class AuthenticationService extends WebAuthnService {
 
     const { verified, authenticationInfo } =
       await this.action.authentication.verify({
-        publicKeyCredential: validatedData.publicKeyCredential,
+        publicKeyCredential,
         challenge: applicant.challenge,
-        origin: validatedData.origin,
-        rpId: validatedData.rpId,
+        origin,
+        rpId,
         credentialId: credential.credentialId,
         publicKey: credential.publicKey,
         counter: credential.counter,
         transports: credential.transports,
       });
 
-    await this.#applicantsRepository.deleteApplicantById(validatedData.session);
+    await this.#applicantsRepository.deleteApplicantById(session);
 
     if (!verified) {
       return { verified };
@@ -89,4 +78,5 @@ class AuthenticationService extends WebAuthnService {
     return { verified, userId: credential.userId };
   }
 }
+
 module.exports = AuthenticationService;

@@ -1,12 +1,9 @@
-const { DynamoDBClient } = require("@aws-sdk/client-dynamodb");
-const { DynamoDBDocument } = require("@aws-sdk/lib-dynamodb");
-
 class CredentialsRepository {
-  constructor() {
-    this.client = DynamoDBDocument.from(new DynamoDBClient());
-  }
-
   #tableName = process.env.CREDENTIALS_TABLE_NAME;
+
+  constructor(client) {
+    this.client = client;
+  }
 
   async createCredential(credential) {
     try {

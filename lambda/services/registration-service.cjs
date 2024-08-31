@@ -1,7 +1,10 @@
-const JSONError = require("../utils/json-error.cjs");
 const WebAuthnService = require("./webauthn-service.cjs");
+const JSONError = require("../utils/json-error.cjs");
 
 class RegistrationService extends WebAuthnService {
+  #applicantsRepository;
+  #credentialsRepository;
+
   constructor(applicantsRepository, credentialsRepository) {
     super();
 
@@ -9,31 +12,18 @@ class RegistrationService extends WebAuthnService {
     this.#credentialsRepository = credentialsRepository;
   }
 
-  #applicantsRepository = null;
-  #credentialsRepository = null;
-
   async request({ rpId, rpName, userId, userName, userDisplayName }) {
-    const validatedData = this.validate("registration", "request", {
-      rpId,
-      rpName,
-      userId,
-      userName,
-      userDisplayName,
-    });
-
-    const excludeCredentials = await this.#getExcludeCredentials(
-      validatedData.userId
-    );
+    const excludeCredentials = await this.#getExcludeCredentials(userId);
 
     const session = this.generateSession();
 
     const publicKeyCredentialCreationOptions =
       await this.action.registration.generate({
-        rpId: validatedData.rpId,
-        rpName: validatedData.rpName,
-        userId: validatedData.userId,
-        userName: validatedData.userName,
-        userDisplayName: validatedData.userDisplayName,
+        rpId,
+        rpName,
+        userId,
+        userName,
+        userDisplayName,
         excludeCredentials,
       });
 
@@ -49,16 +39,9 @@ class RegistrationService extends WebAuthnService {
     return { session, publicKeyCredentialCreationOptions };
   }
 
-  async response({ session, rpId, origin, publicKeyCredential }) {
-    const validatedData = this.validate("registration", "response", {
-      session,
-      rpId,
-      origin,
-      publicKeyCredential,
-    });
-
+  async response({ origin, rpId, session, publicKeyCredential }) {
     const applicant = await this.#applicantsRepository.getApplicantById(
-      validatedData.session
+      session
     );
 
     if (!applicant) {
@@ -71,13 +54,13 @@ class RegistrationService extends WebAuthnService {
 
     const { verified, registrationInfo } =
       await this.action.registration.verify({
-        publicKeyCredential: validatedData.publicKeyCredential,
+        publicKeyCredential,
         challenge: applicant.challenge,
-        origin: validatedData.origin,
-        rpId: validatedData.rpId,
+        origin,
+        rpId,
       });
 
-    await this.#applicantsRepository.deleteApplicantById(validatedData.session);
+    await this.#applicantsRepository.deleteApplicantById(session);
 
     if (!verified) {
       return { verified };

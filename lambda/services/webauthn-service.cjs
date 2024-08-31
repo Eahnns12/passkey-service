@@ -1,6 +1,5 @@
 const crypto = require("node:crypto");
 const z = require("zod");
-const JSONError = require("../utils/json-error.cjs");
 const { registration, authentication } = require("../utils/web-authn.cjs");
 
 class WebAuthnService {
@@ -37,17 +36,6 @@ class WebAuthnService {
     registration: registration,
     authentication: authentication,
   };
-
-  validate(schema, action, data) {
-    try {
-      return this.schemas[schema][action].parse(data);
-    } catch (error) {
-      throw new JSONError(error.message, {
-        statusCode: 400,
-        title: "Validation Error",
-      });
-    }
-  }
 
   generateSession(length = 10) {
     return crypto.randomBytes(length).toString("base64");

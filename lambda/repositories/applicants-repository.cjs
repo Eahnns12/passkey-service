@@ -1,9 +1,6 @@
-const { DynamoDBClient } = require("@aws-sdk/client-dynamodb");
-const { DynamoDBDocument } = require("@aws-sdk/lib-dynamodb");
-
 class ApplicantsRepository {
-  constructor() {
-    this.client = DynamoDBDocument.from(new DynamoDBClient());
+  constructor(client) {
+    this.client = client;
   }
 
   #tableName = process.env.APPLICANTS_TABLE_NAME;

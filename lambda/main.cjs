@@ -21,7 +21,7 @@ async function handler(event) {
   if (routes.has(route)) {
     return routes.get(route)(event);
   } else {
-    return errorResponse();
+    return errorResponse("unregistered route", { instance: "/webauthn" });
   }
 }
 

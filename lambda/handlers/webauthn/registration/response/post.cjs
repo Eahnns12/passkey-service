@@ -1,41 +1,27 @@
-const { RegistrationService } = require("../../../../services/index.cjs");
-const {
-  ApplicantsRepository,
-  CredentialsRepository,
-} = require("../../../../repositories/index.cjs");
+const { getInstance, RegistrationService } = require("../../../../core.cjs");
 const {
   successResponse,
   errorResponse,
 } = require("../../../../utils/http-response.cjs");
+const getOriginAndHostname = require("../../../../utils/get-origin-and-hostname.cjs");
+const getBody = require("../../../../utils/get-body.cjs");
+const validate = require("../../../../utils/validate.cjs");
 
 async function registrationResponseHandler(event) {
   try {
-    const origin = event.headers.origin;
+    const { origin, hostname: rpId } = getOriginAndHostname(event);
+    const { session, publicKeyCredential } = getBody(event);
 
-    if (!origin) {
-      throw new JSONError("request agent not supported", {
-        statusCode: 400,
-        title: "Error",
-        instance: "/webauthn/registration/request",
-      });
-    }
+    const params = { origin, rpId, session, publicKeyCredential };
 
-    const hostname = new URL(origin).hostname;
-    const { session, publicKeyCredential } = JSON.parse(event.body);
+    const registrationService = getInstance(RegistrationService);
 
-    const applicantsRepository = new ApplicantsRepository();
-    const credentialsRepository = new CredentialsRepository();
-    const registrationService = new RegistrationService(
-      applicantsRepository,
-      credentialsRepository
+    const validatedRequest = validate(
+      registrationService.response.bind(registrationService),
+      registrationService.schemas.registration.response
     );
 
-    const result = await registrationService.response({
-      session,
-      origin,
-      rpId: hostname,
-      publicKeyCredential,
-    });
+    const result = await validatedRequest(params);
 
     return successResponse(result);
   } catch (error) {
